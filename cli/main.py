@@ -1,3 +1,7 @@
+__title__ = 'echome-cli'
+__version__ = '0.1.0'
+__author__ = 'Marcus Gutierrez'
+
 import sys
 import argparse
 import logging
@@ -12,7 +16,6 @@ APP_NAME="echome"
 
 class ecHomeCli:
     def __init__(self):
-        print()
         parser = argparse.ArgumentParser(
             description='ecHome CLI',
             usage='''echome <service> <subcommand> [<args>]
@@ -41,6 +44,10 @@ The most commonly used ecHome service commands are:
     
     def images(self):
         ecHomeCli_Images()
+    
+    def version(self):
+        print(__version__)
+        exit()
 
 class ecHomeParent:
 

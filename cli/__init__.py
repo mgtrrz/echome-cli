@@ -1,3 +1,4 @@
+import logging
 from .main import ecHomeCli
 
 if __name__ == "__main__":
