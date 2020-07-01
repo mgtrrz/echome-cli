@@ -1,0 +1,41 @@
+# Config files
+database.ini
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+
+# VSCode #
+##########
+.vscode/
+
+# Python #
+##########
+venv/
+vscodeenv/
+
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Python Package specific
+*.egg-info
+build/
+dist/
+
+# Misc files:
+sandbox.py
