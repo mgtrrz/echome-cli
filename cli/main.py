@@ -12,6 +12,7 @@ APP_NAME="echome"
 
 class ecHomeCli:
     def __init__(self):
+        print()
         parser = argparse.ArgumentParser(
             description='ecHome CLI',
             usage='''echome <service> <subcommand> [<args>]
@@ -130,6 +131,7 @@ class ecHomeCli_Vm(ecHomeParent):
         elif args.format == "json":
             print(json.dumps(items, indent=4))
 
+        exit()
     
     def describe(self):
         parser = argparse.ArgumentParser(description='Describe a virtual machine', prog=f"{APP_NAME} {self.parent_service} describe")
@@ -142,6 +144,8 @@ class ecHomeCli_Vm(ecHomeParent):
             self.print_table(vm)
         elif args.format == "json":
             print(json.dumps(self.client.describe(args.vm_id), indent=4))
+        
+        exit()
 
     
     def create(self):
@@ -160,6 +164,8 @@ class ecHomeCli_Vm(ecHomeParent):
         # ** unpacks the arguments, vars() returns the variables and provides them to client.create() as
         # ImageId=gmi-12345, InstanceSize=standard.small, etc.
         print(self.client.create(**vars(args)))
+        #TODO: Return exit value if command does not work
+        exit()
     
     def start(self):
         parser = argparse.ArgumentParser(description='Start a virtual machine', prog=f"{APP_NAME} {self.parent_service} start")
@@ -167,6 +173,8 @@ class ecHomeCli_Vm(ecHomeParent):
         args = parser.parse_args(sys.argv[3:])
 
         print(self.client.start(args.vm_id))
+        #TODO: Return exit value if command does not work
+        exit()
     
     def stop(self):
         parser = argparse.ArgumentParser(description='Stop a virtual machine', prog=f"{APP_NAME} {self.parent_service} stop")
@@ -174,6 +182,8 @@ class ecHomeCli_Vm(ecHomeParent):
         args = parser.parse_args(sys.argv[3:])
 
         print(self.client.stop(args.vm_id))
+        #TODO: Return exit value if command does not work
+        exit()
     
     def terminate(self):
         parser = argparse.ArgumentParser(description='Terminate a virtual machine', prog=f"{APP_NAME} {self.parent_service} terminate")
@@ -181,6 +191,8 @@ class ecHomeCli_Vm(ecHomeParent):
         args = parser.parse_args(sys.argv[3:])
 
         print(self.client.terminate(args.vm_id))
+        #TODO: Return exit value if command does not work
+        exit()
 
     def print_table(self, vm_list):
         headers = ["Name", "Vm Id", "Instance Size", "State", "IP", "Image", "Created"]
@@ -228,6 +240,9 @@ class ecHomeCli_SshKeys(ecHomeParent):
             self.print_table(keys)
         elif args.format == "json":
             print(json.dumps(self.client.describe_all(), indent=4))
+        
+        #TODO: Return exit value if command does not work
+        exit()
     
     def describe(self):
         parser = argparse.ArgumentParser(description='Describe an SSH Key', prog=f"{APP_NAME} {self.parent_service} describe")
@@ -240,6 +255,9 @@ class ecHomeCli_SshKeys(ecHomeParent):
             self.print_table(key)
         elif args.format == "json":
             print(json.dumps(self.client.describe(args.key_name), indent=4))
+        
+        #TODO: Return exit value if command does not work
+        exit()
     
     def create(self):
         parser = argparse.ArgumentParser(description='Create an SSH Key', prog=f"{APP_NAME} {self.parent_service} create")
@@ -270,6 +288,8 @@ class ecHomeCli_SshKeys(ecHomeParent):
                 exit(1)
 
         print(json.dumps(response, indent=4))
+        #TODO: Return exit value if command does not work
+        exit()
 
     def delete(self):
         parser = argparse.ArgumentParser(description='Delete an SSH Key', prog=f"{APP_NAME} {self.parent_service} delete")
@@ -277,6 +297,8 @@ class ecHomeCli_SshKeys(ecHomeParent):
         args = parser.parse_args(sys.argv[3:])
 
         print(json.dumps(self.client.delete(args.key_name), indent=4))
+        #TODO: Return exit value if command does not work
+        exit()
     
 
 class ecHomeCli_Images(ecHomeParent):
@@ -313,6 +335,9 @@ class ecHomeCli_Images(ecHomeParent):
         else:
             logging.error("Unsupported Image type")
             exit(1)
+        
+        #TODO: Return exit value if command does not work
+        exit()
     
     def describe(self):
         parser = argparse.ArgumentParser(description='Describe an image', prog=f"{APP_NAME} {self.parent_service} describe")
@@ -335,6 +360,9 @@ class ecHomeCli_Images(ecHomeParent):
         else:
             logging.error("Unsupported Image type")
             exit(1)
+        
+        #TODO: Return exit value if command does not work
+        exit()
     
     def describe_all(self):
         parser = argparse.ArgumentParser(description='Describe all images', prog=f"{APP_NAME} {self.parent_service} describe-all")
@@ -358,6 +386,9 @@ class ecHomeCli_Images(ecHomeParent):
         else:
             logging.error("Unsupported Image type")
             exit(1)
+        
+        #TODO: Return exit value if command does not work
+        exit()
 
 if __name__ == "__main__":
     ecHomeCli()

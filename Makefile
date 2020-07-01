@@ -13,6 +13,10 @@ build: 		# Build sdist and bdist_wheel package files.
 clean: 		# Clean the contents of the 
 	rm -rf build/ dist/ *.egg-info 
 
+.PHONY: install
+install:
+	python3 setup.py install
+
 .PHONY: publish
 publish:
 	twine upload dist/*

@@ -27,7 +27,7 @@ setuptools.setup(
     ],
     entry_points = {
         'console_scripts': [
-            'echome = cli/main:ecHomeCli'
+            'echome=cli:ecHomeCli'
         ]
     },
 )
