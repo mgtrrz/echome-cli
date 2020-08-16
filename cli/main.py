@@ -1,5 +1,5 @@
 __title__ = 'echome-cli'
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 __author__ = 'Marcus Gutierrez'
 
 import sys
@@ -160,9 +160,8 @@ class ecHomeCli_Vm(ecHomeParent):
 
         parser.add_argument('--image-id', help='Image Id', required=True, metavar="<value>", dest="ImageId")
         parser.add_argument('--instance-size', help='Instance Size', required=True, metavar="<value>", dest="InstanceSize")
-        parser.add_argument('--network-type', help='Network type', metavar="<value>", dest="NetworkType")
-        parser.add_argument('--private-ip', help='Network private IP', metavar="<value>", dest="NetworkInterfacePrivateIp")
-        parser.add_argument('--gateway-ip', help='Network gateway IP', metavar="<value>", dest="NetworkInterfaceGatewayIp")
+        parser.add_argument('--network-profile', help='Network type', required=True, metavar="<value>", dest="NetworkProfile")
+        parser.add_argument('--private-ip', help='Network private IP', metavar="<value>", dest="PrivateIp")
         parser.add_argument('--key-name', help='Key name', metavar="<value>", dest="KeyName")
         parser.add_argument('--disk-size', help='Disk size', metavar="<value>", dest="DiskSize")
         parser.add_argument('--tags', help='Tags', type=json.loads, metavar='{"Key": "Value", "Key": "Value"}', dest="Tags")

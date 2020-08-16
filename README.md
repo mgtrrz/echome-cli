@@ -59,6 +59,28 @@ $ echome sshkeys describe test_key --format json
 ]
 ```
 
+## Development
+
+### Initialize your environment
+
+Create your virtual environment and install libraries.
+
+```
+$ virtualenv -p python3.8 venv
+$ source venv/bin/activate
+$ pip install -r requirements.txt
+```
+
+Set up your `~/.echome` directory with a `config` and `credentials` file that allows you to connect to the echome server (setup guide above).
+
+Test commands with `python cli/main.py`:
+
+```
+(venv)$ python cli/main.py vm describe-all
+Name              Vm Id        Instance Size    State    IP              Image                        Created
+----------------  -----------  ---------------  -------  --------------  ---------------------------  --------------------------
+RemoteDevServer   vm-30418752  standard.small   running  172.16.9.12     gmi-07b7e1e4 (Ubuntu 20.04)  2020-08-05 01:22:56.774008
+```
 
 ## Authors
 
