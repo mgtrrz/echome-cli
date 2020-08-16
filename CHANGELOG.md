@@ -16,10 +16,16 @@ Types of changes:
 
 ## [Unreleased]
 
+## [0.1.1] - 2020-08-16
+
+### Changed
+- Allows vm create to use new VirtualNetwork profile 
+
 ## [0.1.0] - 2020-07-01
 
 ### Added
 - Initial import of ecHome CLI
 
-[unreleased]: https://github.com/mgtrrz/echome-cli/compare/0.1.0...HEAD
+[unreleased]: https://github.com/mgtrrz/echome-cli/compare/0.1.1...HEAD
+[0.1.1]: https://github.com/mgtrrz/echome-cli/compare/0.1.0...0.1.1
 [0.1.0]: https://github.com/mgtrrz/echome-cli/releases/tag/0.1.0
