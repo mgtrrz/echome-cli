@@ -325,16 +325,14 @@ class ecHomeCli_Images(ecHomeParent):
         parser = argparse.ArgumentParser(description='Register an image', prog=f"{APP_NAME} {self.parent_service} register")
         parser.add_argument('--type',  help='Type of image to register', choices=["guest", "user"], required=True)
         parser.add_argument('--image-path',  help='Path to the new image. This image must exist on the new server and exist in the configured guest images directory.', metavar="</path/to/image>", dest="ImagePath", required=True)
-        parser.add_argument('--image-name',  help='Name of the new image', metavar="<image-name>", required=True)
-        parser.add_argument('--image-description',  help='Description of the new image', metavar="<image-desc>", required=True)
+        parser.add_argument('--image-name',  help='Name of the new image', metavar="<image-name>", dest="ImageName", required=True)
+        parser.add_argument('--image-description',  help='Description of the new image', metavar="<image-desc>", dest="ImageDescription", required=True)
+        parser.add_argument('--image-user',  help='Default user for logging into the image', metavar="<image-user>", dest="ImageUser")
+        parser.add_argument('--tags', help='Tags', type=json.loads, metavar='{"Key": "Value", "Key": "Value"}', dest="Tags")
         args = parser.parse_args(sys.argv[3:])
 
         if args.type == "guest":
-            resp = self.client.guest().register(
-                ImagePath=args.ImagePath,
-                ImageName=args.ImageName,
-                ImageDescription=args.ImageDescription
-            )
+            resp = self.client.guest().register(**vars(args))
             print(json.dumps(resp))
         elif args.type == "user":
             print("got type user")
