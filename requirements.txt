@@ -1,12 +1,12 @@
 appdirs==1.4.3
-bleach==3.1.5
+bleach==3.3.0
 CacheControl==0.12.6
 certifi==2020.6.20
 cffi==1.14.2
 chardet==3.0.4
 colorama==0.4.3
 contextlib2==0.6.0
-cryptography==3.0
+cryptography==3.2
 distlib==0.3.0
 distro==1.4.0
 docutils==0.16
@@ -23,7 +23,7 @@ pep517==0.8.2
 pkginfo==1.5.0.1
 progress==1.5
 pycparser==2.20
-Pygments==2.6.1
+Pygments==2.7.4
 pyparsing==2.4.6
 pytoml==0.1.21
 readme-renderer==26.0
