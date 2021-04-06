@@ -1,5 +1,5 @@
 __title__ = 'echome-cli'
-__version__ = '0.1.1'
+__version__ = '0.2.0'
 __author__ = 'Marcus Gutierrez'
 
 import sys
@@ -21,9 +21,12 @@ class ecHomeCli:
             usage='''echome <service> <subcommand> [<args>]
 
 The most commonly used ecHome service commands are:
-   vm         Interact with ecHome virtual machines.
-   sshkeys    Interact with SSH keys used for virtual machines.
-   images     Interact with guest and user images for virtual machines.
+   vm         Create and manage with ecHome virtual machines.
+   sshkeys    Create and manage SSH keys used for virtual machines.
+   images     Create and manage guest and user images for virtual machines.
+   network    Create and manage virtual networks.
+   kube       Create and manage Kubernetes clusters.
+   access     Create and manage User accounts, tokens, and policies.
 ''')
         parser.add_argument('service', help='Service to interact with')
         # parse_args defaults to [1:] for args, but you need to
@@ -44,6 +47,15 @@ The most commonly used ecHome service commands are:
     
     def images(self):
         ecHomeCli_Images()
+
+    def network(self):
+        ecHomeCli_Network()
+    
+    def kube(self):
+        ecHomeCli_Kube()
+
+    def access(self):
+        ecHomeCli_Access()
     
     def version(self):
         print(__version__)
@@ -74,6 +86,8 @@ class ecHomeParent:
         method_list = [func for func in dir(self) if callable(getattr(self, func))]
         exclude.append("get_list_of_methods")
         exclude.append("parent_service_argparse")
+        exclude.append("get_from_dict")
+        exclude.append("print_table")
 
         methods = []
         for method in method_list:
@@ -91,12 +105,12 @@ class ecHomeParent:
     # should set __init__ variables: self.table_headers, self.data_columns with information for 
     # that resource. But they can be overwritten by setting parameters.
     # Nested dictionary items should be a list, e.g. '[dict_key1, ["dict_key2", "nested_key1"], dict_key3]'
-    def print_table(self, objlist, header="", data_columns=""):
+    def print_table(self, objlist, header="", data_columns="", wide:bool=False):
         if not header:
-            header=self.table_headers
+            header = self.table_headers + self.extra_table_headers if wide else self.table_headers
         
         if not data_columns:
-            data_columns=self.data_columns
+            data_columns = self.data_columns + self.extra_data_columns if wide else self.data_columns
         
         all_rows = []
         for row in objlist:
@@ -393,6 +407,221 @@ class ecHomeCli_Images(ecHomeParent):
         
         #TODO: Return exit value if command does not work
         exit()
+
+class ecHomeCli_Network(ecHomeParent):
+
+    def __init__(self):
+        self.parent_service = "network"
+        self.parent_full_name = "Network"
+
+        self.table_headers = ["Name", "Network Id", "Type", "CIDR"]
+        self.data_columns=["name", "network_id", "type", "cidr"]
+
+        self.extra_table_headers = ["Interface", "DNS Servers"] 
+        self.extra_data_columns = [["config", "bridge_interface"], ["config", "dns_servers"]]
+
+        self.session = Session()
+        self.client = self.session.client("Network")
+
+        self.parent_service_argparse()
+
+    def describe(self):
+        parser = argparse.ArgumentParser(description='Describe a virtual network', prog=f"{APP_NAME} {self.parent_service} describe")
+        parser.add_argument('network_id',  help='Network Id', metavar="<network-id>")
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        parser.add_argument('--wide', '-w', help='More descriptive output when in Table view', action='store_true', default=False)
+        args = parser.parse_args(sys.argv[3:])
+
+        networks = self.client.describe(args.network_id)
+        if args.format == "table":
+            i=0
+            for network in networks:
+                networks[i]["cidr"] = f"{network['config']['network']}/{network['config']['prefix']}"
+                networks[i]["dns_servers"] = ",".join(network['config']['dns_servers'])
+                i += 1
+            self.print_table(networks, wide=args.wide)
+        elif args.format == "json":
+            print(json.dumps(networks, indent=4))
+        
+        #TODO: Return exit value if command does not work
+        exit()
+    
+    def describe_all(self):
+        parser = argparse.ArgumentParser(description='Describe all virtual networks', prog=f"{APP_NAME} {self.parent_service} describe-all")
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        parser.add_argument('--wide', '-w', help='More descriptive output when in Table view', action='store_true', default=False)
+        args = parser.parse_args(sys.argv[3:])
+
+        networks = self.client.describe_all()
+        if args.format == "table":
+            i=0
+            for network in networks:
+                networks[i]["cidr"] = f"{network['config']['network']}/{network['config']['prefix']}"
+                i += 1
+            self.print_table(networks, wide=args.wide)
+        elif args.format == "json":
+            print(json.dumps(networks, indent=4))
+        
+        #TODO: Return exit value if command does not work
+        exit()
+
+
+class ecHomeCli_Kube(ecHomeParent):
+
+    def __init__(self):
+        self.parent_service = "kube"
+        self.parent_full_name = "Kubernetes"
+
+        self.table_headers = ["Cluster ID", "Primary Node", "Associated Instances", "Status"]
+        self.data_columns=["cluster_id", "primary_controller", "associated_instances", ["status", "status"]]
+
+        self.session = Session()
+        self.client = self.session.client("Kube")
+
+        self.parent_service_argparse()
+
+    def describe(self):
+        parser = argparse.ArgumentParser(description='Describe a Kubernetes cluster', prog=f"{APP_NAME} {self.parent_service} describe")
+        parser.add_argument('cluster_id',  help='Cluster Id', metavar="<cluster-id>")
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        args = parser.parse_args(sys.argv[3:])
+
+        clusters = self.client.describe_cluster(args.cluster_id)
+        if args.format == "table":
+            self.print_table(clusters)
+        elif args.format == "json":
+            print(json.dumps(clusters, indent=4))
+        
+        #TODO: Return exit value if command does not work
+        exit()
+    
+    def describe_all(self):
+        parser = argparse.ArgumentParser(description='Describe all Kubernetes clusters', prog=f"{APP_NAME} {self.parent_service} describe-all")
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        args = parser.parse_args(sys.argv[3:])
+
+        clusters = self.client.describe_all_clusters()
+        if args.format == "table":
+            self.print_table(clusters)
+        elif args.format == "json":
+            print(json.dumps(clusters, indent=4))
+        
+        #TODO: Return exit value if command does not work
+        exit()
+    
+    def terminate(self):
+        parser = argparse.ArgumentParser(description='Terminate a Kubernetes cluster', prog=f"{APP_NAME} {self.parent_service} describe-all")
+        parser.add_argument('cluster_id',  help='Cluster Id', metavar="<cluster-id>")
+        #parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        args = parser.parse_args(sys.argv[3:])
+
+        print(self.client.terminate_cluster(args.cluster_id))
+        
+        #TODO: Return exit value if command does not work
+        exit()
+    
+    def get_config(self):
+        parser = argparse.ArgumentParser(description='Obtain the Kubernetes Admin config file', prog=f"{APP_NAME} {self.parent_service} get-config")
+        parser.add_argument('cluster_id',  help='Cluster Id', metavar="<cluster-id>")
+
+        group = parser.add_mutually_exclusive_group(required=True)
+        group.add_argument('--file',  help='Where a new file will be created with the contents of the config file.', metavar="<./cluster.conf>")
+        group.add_argument('--no-file',  help='Output only the config file to stdout instead of into a file.', action='store_true')
+
+        args = parser.parse_args(sys.argv[3:])
+
+        try:
+            kube_config = self.client.get_kube_config(args.cluster_id)['kube_config']
+        except Exception:
+            print("There was an error when attempting to retrieve the config file.")
+            exit(1)
+
+        if args.no_file:
+            print(kube_config)
+            exit(0)
+        else:
+            try:
+                with open(args.file, "a") as file_object:
+                    file_object.write(kube_config)
+            except Exception as error:
+                print(error)
+                exit(1)
+        
+        exit()
+    
+    def create(self):
+        parser = argparse.ArgumentParser(description='Create a Kubernetes cluster', prog=f"{APP_NAME} {self.parent_service} describe-all")
+        parser.add_argument('--image-id', help='Image Id', required=True, metavar="<value>", dest="ImageId")
+        parser.add_argument('--instance-size', help='Instance Size', required=True, metavar="<value>", dest="InstanceSize")
+        parser.add_argument('--network-profile', help='Network type', required=True, metavar="<value>", dest="NetworkProfile")
+        parser.add_argument('--controller-ip', help='IP address of the primary controller', required=True, metavar="<value>", dest="ControllerIp")
+        parser.add_argument('--node-ips', help='IPs for each additional node separated by a comma. At least one must be provided. \
+             These must be in the same network as the provided network profile. Each IP added represents a new node.', 
+             metavar='<ip>, <ip>, etc.', required=True, dest="NodeIps")
+        parser.add_argument('--key-name', help='Key name', metavar="<value>", dest="KeyName")
+        parser.add_argument('--disk-size', help='Disk size', metavar="<value>", dest="DiskSize")
+        parser.add_argument('--tags', help='Tags', type=json.loads, metavar='{"Key": "Value", "Key": "Value"}', dest="Tags")
+        args = parser.parse_args(sys.argv[3:])
+
+        # Convert node IPs into list.
+        args.NodeIps = str(args.NodeIps).strip().split(",")
+        print(args)
+
+        print(self.client.create_cluster(**vars(args)))
+        
+        #TODO: Return exit value if command does not work
+        exit()
+
+class ecHomeCli_Access(ecHomeParent):
+
+    def __init__(self):
+        self.parent_service = "access"
+        self.parent_full_name = "Access"
+
+        self.table_headers = ["Name", "Username", "User ID", "Created"]
+        self.data_columns=["name", "username", "user_id", "created"]
+
+        self.session = Session()
+        self.client = self.session.client("Access")
+
+        self.parent_service_argparse()
+
+    def describe(self):
+        parser = argparse.ArgumentParser(description='Describe a virtual network', prog=f"{APP_NAME} {self.parent_service} describe")
+        parser.add_argument('network_id',  help='Network Id', metavar="<network-id>")
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        parser.add_argument('--wide', '-w', help='More descriptive output when in Table view', action='store_true', default=False)
+        args = parser.parse_args(sys.argv[3:])
+
+        networks = self.client.describe(args.network_id)
+        if args.format == "table":
+            i=0
+            for network in networks:
+                networks[i]["cidr"] = f"{network['config']['network']}/{network['config']['prefix']}"
+                networks[i]["dns_servers"] = ",".join(network['config']['dns_servers'])
+                i += 1
+            self.print_table(networks, wide=args.wide)
+        elif args.format == "json":
+            print(json.dumps(networks, indent=4))
+        
+        #TODO: Return exit value if command does not work
+        exit()
+    
+    def describe_all(self):
+        parser = argparse.ArgumentParser(description='Describe all users', prog=f"{APP_NAME} {self.parent_service} describe-all")
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        args = parser.parse_args(sys.argv[3:])
+
+        users = self.client.describe_all()
+        if args.format == "table":
+            self.print_table(users)
+        elif args.format == "json":
+            print(json.dumps(users, indent=4))
+        
+        #TODO: Return exit value if command does not work
+        exit()
+
+
 
 if __name__ == "__main__":
     ecHomeCli()
