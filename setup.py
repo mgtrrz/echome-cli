@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="echome-cli",
-    version="0.1.1",
+    version="0.2.0",
     author="Marcus Gutierrez",
     author_email="markg90@gmail.com",
     description="EcHome CLI",

@@ -16,6 +16,15 @@ Types of changes:
 
 ## [Unreleased]
 
+## [0.2.0] - 2021-04-03
+
+### Fixed 
+- Additional arguments for registering images
+
+
+### Changed
+- Allows vm create to use new VirtualNetwork profile 
+
 ## [0.1.1] - 2020-08-16
 
 ### Changed
