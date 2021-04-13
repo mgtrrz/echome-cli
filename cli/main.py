@@ -84,10 +84,12 @@ class ecHomeParent:
     # Converts underscores to dashes to automatically add into the ArgumentParser's choices variable
     def get_list_of_methods(self, exclude=[]):
         method_list = [func for func in dir(self) if callable(getattr(self, func))]
-        exclude.append("get_list_of_methods")
-        exclude.append("parent_service_argparse")
-        exclude.append("get_from_dict")
-        exclude.append("print_table")
+        exclude += [
+            "get_list_of_methods",
+            "parent_service_argparse",
+            "get_from_dict",
+            "print_table",
+        ]
 
         methods = []
         for method in method_list:
@@ -578,8 +580,8 @@ class ecHomeCli_Access(ecHomeParent):
         self.parent_service = "access"
         self.parent_full_name = "Access"
 
-        self.table_headers = ["Name", "Username", "User ID", "Created"]
-        self.data_columns=["name", "username", "user_id", "created"]
+        self.table_headers = ["Name", "Username", "User ID", "Type", "Created"]
+        self.data_columns=["name", "username", "user_id", "type", "created"]
 
         self.session = Session()
         self.client = self.session.client("Access")
@@ -587,22 +589,25 @@ class ecHomeCli_Access(ecHomeParent):
         self.parent_service_argparse()
 
     def describe(self):
-        parser = argparse.ArgumentParser(description='Describe a virtual network', prog=f"{APP_NAME} {self.parent_service} describe")
-        parser.add_argument('network_id',  help='Network Id', metavar="<network-id>")
+        parser = argparse.ArgumentParser(description='Describe a specific user', prog=f"{APP_NAME} {self.parent_service} describe")
+        parser.add_argument('username',  help='Username or user id', metavar="<username>")
         parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
-        parser.add_argument('--wide', '-w', help='More descriptive output when in Table view', action='store_true', default=False)
         args = parser.parse_args(sys.argv[3:])
 
-        networks = self.client.describe(args.network_id)
+        users = self.client.describe_user(args.username)
         if args.format == "table":
-            i=0
-            for network in networks:
-                networks[i]["cidr"] = f"{network['config']['network']}/{network['config']['prefix']}"
-                networks[i]["dns_servers"] = ",".join(network['config']['dns_servers'])
-                i += 1
-            self.print_table(networks, wide=args.wide)
+            if users[0]["auth"]:
+                for auth in users[0]['auth']:
+                    users.append({
+                        "name": "",
+                        "username": "",
+                        "user_id": auth['auth_id'],
+                        "created": auth['created'],
+                        "type": auth['type'],
+                    })
+            self.print_table(users)
         elif args.format == "json":
-            print(json.dumps(networks, indent=4))
+            print(json.dumps(users, indent=4))
         
         #TODO: Return exit value if command does not work
         exit()
@@ -613,6 +618,54 @@ class ecHomeCli_Access(ecHomeParent):
         args = parser.parse_args(sys.argv[3:])
 
         users = self.client.describe_all()
+        if args.format == "table":
+            self.print_table(users)
+        elif args.format == "json":
+            print(json.dumps(users, indent=4))
+        
+        #TODO: Return exit value if command does not work
+        exit()
+    
+    def describe_caller(self):
+        parser = argparse.ArgumentParser(description='Describe caller', prog=f"{APP_NAME} {self.parent_service} describe-caller")
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        args = parser.parse_args(sys.argv[3:])
+
+        users = self.client.describe_caller()
+        if args.format == "table":
+            self.print_table(users)
+        elif args.format == "json":
+            print(json.dumps(users, indent=4))
+        
+        #TODO: Return exit value if command does not work
+        exit()
+    
+    def create(self):
+        parser = argparse.ArgumentParser(description='Create user or API keys', prog=f"{APP_NAME} {self.parent_service} create")
+        parser.add_argument('--username', help='Username. This will be used for login.', required=True, metavar="<value>", dest="Username")
+        parser.add_argument('--email', help='Email address of the user.', required=False, metavar="<value>", dest="Email")
+        parser.add_argument('--name', help='Name of the user', required=False, metavar="<value>", dest="InstanceSize")
+
+        group = parser.add_mutually_exclusive_group(required=True)
+        group.add_argument('--password', help='Password for the user. If this is not supplied, the script will prompt you to\
+            add one where it will be obscured. Using this flag means the password may be seen. If no password needs to be supplied,\
+            use --no-password.', required=False, metavar="<value>", dest="Password")
+        group.add_argument('--no-password',  help='No password will be passed. One will be generated for you.', action='store_true')
+
+        parser.add_argument('--tags', help='Tags', type=json.loads, metavar='{"Key": "Value", "Key": "Value"}', dest="Tags")
+        args = parser.parse_args(sys.argv[3:])
+
+        print(self.client.create(**vars(args)))
+        
+        #TODO: Return exit value if command does not work
+        exit()
+
+    def delete(self):
+        parser = argparse.ArgumentParser(description="Delete a user or a user's API keys", prog=f"{APP_NAME} {self.parent_service} delete")
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        args = parser.parse_args(sys.argv[3:])
+
+        users = self.client.delete()
         if args.format == "table":
             self.print_table(users)
         elif args.format == "json":
