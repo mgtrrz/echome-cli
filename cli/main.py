@@ -1,5 +1,5 @@
 __title__ = 'echome-cli'
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 __author__ = 'Marcus Gutierrez'
 
 import sys
@@ -10,9 +10,14 @@ from functools import reduce
 import operator
 from tabulate import tabulate
 from echome import Session
+from echome.vm import Vm
 
+DEFAULT_FORMAT = "table"
 
 APP_NAME="echome"
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 class ecHomeCli:
     def __init__(self):
@@ -63,10 +68,8 @@ The most commonly used ecHome service commands are:
 
 class ecHomeParent:
 
-    # Parent service argument parser 
-    # Landing pad for this service.
     def parent_service_argparse(self):
-
+        """Parent service argument parser"""
         parser = argparse.ArgumentParser(description=f"Interact with the {self.parent_full_name} service", prog=f"{APP_NAME} {self.parent_service}")
 
         parser.add_argument('subcommand', help=f"Subcommand for the {self.parent_service} service.", choices=self.get_list_of_methods())
@@ -80,9 +83,13 @@ class ecHomeParent:
         # use dispatch pattern to invoke method with same name
         getattr(self, subcommand)()
 
-    # Gets the list of public methods for the class. 
-    # Converts underscores to dashes to automatically add into the ArgumentParser's choices variable
+
     def get_list_of_methods(self, exclude=[]):
+        """
+        Gets the list of public methods for the class. 
+        
+        Converts underscores to dashes to automatically add into the ArgumentParser's choices variable
+        """
         method_list = [func for func in dir(self) if callable(getattr(self, func))]
         exclude += [
             "get_list_of_methods",
@@ -99,15 +106,20 @@ class ecHomeParent:
         return methods
     
     @staticmethod
-    # Traverse a dictionary to get a nested value from a list 
     def get_from_dict(dict, mapList):
+        """Traverse a dictionary to get a nested value from a list """
         return reduce(operator.getitem, mapList, dict)
 
-    # Generic function for printing a Tabulate table. Classes that inherit from this base class
-    # should set __init__ variables: self.table_headers, self.data_columns with information for 
-    # that resource. But they can be overwritten by setting parameters.
-    # Nested dictionary items should be a list, e.g. '[dict_key1, ["dict_key2", "nested_key1"], dict_key3]'
+
     def print_table(self, objlist, header="", data_columns="", wide:bool=False):
+        """
+        Generic function for printing a Tabulate table.
+
+        Classes that inherit from this base class
+        should set __init__ variables: self.table_headers, self.data_columns with information for 
+        that resource. But they can be overwritten by setting parameters.
+        Nested dictionary items should be a list, e.g. '[dict_key1, ["dict_key2", "nested_key1"], dict_key3]'
+        """
         if not header:
             header = self.table_headers + self.extra_table_headers if wide else self.table_headers
         
@@ -128,6 +140,14 @@ class ecHomeParent:
             all_rows.append(formatted_row)
 
         print(tabulate(all_rows, header))
+    
+    def print_output(self, output, format):
+        """Prints the output based on the provided format"""
+
+        if format == "table":
+            self.print_table(output)
+        elif format == "json":
+            print(json.dumps(output, indent=4))
 
 
 
@@ -138,35 +158,31 @@ class ecHomeCli_Vm(ecHomeParent):
         self.parent_full_name = "Virtual Machine"
         
         self.session = Session()
-        self.client = self.session.client("Vm")
+        self.client:Vm = self.session.client("Vm")
+
+        format = self.session.config.config_value("format", self.session.current_profile)
+        self.format = format if format else DEFAULT_FORMAT
 
         self.parent_service_argparse()
     
     def describe_all(self):
         parser = argparse.ArgumentParser(description='Describe all virtual machines', prog=f"{APP_NAME} {self.parent_service} describe-all")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
         args = parser.parse_args(sys.argv[3:])
 
         items = self.client.describe_all()
-
-        if args.format == "table":
-            self.print_table(items)
-        elif args.format == "json":
-            print(json.dumps(items, indent=4))
+        self.print_output(items["results"], args.format)
 
         exit()
     
     def describe(self):
         parser = argparse.ArgumentParser(description='Describe a virtual machine', prog=f"{APP_NAME} {self.parent_service} describe")
         parser.add_argument('vm_id',  help='Virtual Machine Id', metavar="<vm-id>")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
         args = parser.parse_args(sys.argv[3:])
 
-        if args.format == "table":
-            vm = self.client.describe(args.vm_id)
-            self.print_table(vm)
-        elif args.format == "json":
-            print(json.dumps(self.client.describe(args.vm_id), indent=4))
+        vm = self.client.describe(args.vm_id)
+        self.print_output(vm["results"], args.format)
         
         exit()
 
@@ -222,13 +238,13 @@ class ecHomeCli_Vm(ecHomeParent):
         for vm in vm_list:
             name = vm["tags"]["Name"] if "Name" in vm["tags"] else ""
             isize = f"{vm['instance_type']}.{vm['instance_size']}"
-            if vm["attached_interfaces"]:
-                ip = vm["attached_interfaces"]["config_at_launch"]["private_ip"]
+            if vm["interfaces"]:
+                ip = vm["interfaces"]["config_at_launch"]["private_ip"]
             else:
                 ip = ""
 
-            if vm['vm_image_metadata']:
-                image = "{} ({})".format(vm['vm_image_metadata']['image_id'], vm['vm_image_metadata']['image_name'])
+            if vm['image_metadata']:
+                image = "{} ({})".format(vm['image_metadata']['image_id'], vm['image_metadata']['image_name'])
             else:
                 image = ""
 
@@ -250,11 +266,14 @@ class ecHomeCli_SshKeys(ecHomeParent):
         self.session = Session()
         self.client = self.session.client("SshKey")
 
+        format = self.session.config.config_value("format", self.session.current_profile)
+        self.format = format if format else DEFAULT_FORMAT
+
         self.parent_service_argparse()
     
     def describe_all(self):
         parser = argparse.ArgumentParser(description='Describe all SSH Keys', prog=f"{APP_NAME} {self.parent_service} describe-all")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
         args = parser.parse_args(sys.argv[3:])
         
         if args.format == "table":
@@ -269,7 +288,7 @@ class ecHomeCli_SshKeys(ecHomeParent):
     def describe(self):
         parser = argparse.ArgumentParser(description='Describe an SSH Key', prog=f"{APP_NAME} {self.parent_service} describe")
         parser.add_argument('key_name',  help='SSH Key Name', metavar="<key-name>")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
         args = parser.parse_args(sys.argv[3:])
         
         if args.format == "table":
@@ -335,6 +354,9 @@ class ecHomeCli_Images(ecHomeParent):
         self.session = Session()
         self.client = self.session.client("Images")
 
+        format = self.session.config.config_value("format", self.session.current_profile)
+        self.format = format if format else DEFAULT_FORMAT
+
         self.parent_service_argparse()
 
     def register(self):
@@ -353,7 +375,7 @@ class ecHomeCli_Images(ecHomeParent):
         elif args.type == "user":
             print("got type user")
         else:
-            logging.error("Unsupported Image type")
+            logger.error("Unsupported Image type")
             exit(1)
         
         #TODO: Return exit value if command does not work
@@ -363,7 +385,7 @@ class ecHomeCli_Images(ecHomeParent):
         parser = argparse.ArgumentParser(description='Describe an image', prog=f"{APP_NAME} {self.parent_service} describe")
         parser.add_argument('image_id',  help='Image Id', metavar="<image-id>")
         parser.add_argument('--type',  help='Type of image to register', choices=["guest", "user"], required=True)
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
         args = parser.parse_args(sys.argv[3:])
 
         if args.type == "guest":
@@ -378,7 +400,7 @@ class ecHomeCli_Images(ecHomeParent):
         elif args.type == "user":
             print("got type user")
         else:
-            logging.error("Unsupported Image type")
+            logger.error("Unsupported Image type")
             exit(1)
         
         #TODO: Return exit value if command does not work
@@ -387,7 +409,7 @@ class ecHomeCli_Images(ecHomeParent):
     def describe_all(self):
         parser = argparse.ArgumentParser(description='Describe all images', prog=f"{APP_NAME} {self.parent_service} describe-all")
         parser.add_argument('--type',  help='Type of image to register', choices=["guest", "user"], required=True)
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
         args = parser.parse_args(sys.argv[3:])
 
         if args.type == "guest":
@@ -404,7 +426,7 @@ class ecHomeCli_Images(ecHomeParent):
             elif args.format == "json":
                 print(json.dumps(images, indent=4))
         else:
-            logging.error("Unsupported Image type")
+            logger.error("Unsupported Image type")
             exit(1)
         
         #TODO: Return exit value if command does not work
@@ -425,12 +447,15 @@ class ecHomeCli_Network(ecHomeParent):
         self.session = Session()
         self.client = self.session.client("Network")
 
+        format = self.session.config.config_value("format", self.session.current_profile)
+        self.format = format if format else DEFAULT_FORMAT
+
         self.parent_service_argparse()
 
     def describe(self):
         parser = argparse.ArgumentParser(description='Describe a virtual network', prog=f"{APP_NAME} {self.parent_service} describe")
         parser.add_argument('network_id',  help='Network Id', metavar="<network-id>")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
         parser.add_argument('--wide', '-w', help='More descriptive output when in Table view', action='store_true', default=False)
         args = parser.parse_args(sys.argv[3:])
 
@@ -450,7 +475,7 @@ class ecHomeCli_Network(ecHomeParent):
     
     def describe_all(self):
         parser = argparse.ArgumentParser(description='Describe all virtual networks', prog=f"{APP_NAME} {self.parent_service} describe-all")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
         parser.add_argument('--wide', '-w', help='More descriptive output when in Table view', action='store_true', default=False)
         args = parser.parse_args(sys.argv[3:])
 
@@ -480,12 +505,15 @@ class ecHomeCli_Kube(ecHomeParent):
         self.session = Session()
         self.client = self.session.client("Kube")
 
+        format = self.session.config.config_value("format", self.session.current_profile)
+        self.format = format if format else DEFAULT_FORMAT
+
         self.parent_service_argparse()
 
     def describe(self):
         parser = argparse.ArgumentParser(description='Describe a Kubernetes cluster', prog=f"{APP_NAME} {self.parent_service} describe")
         parser.add_argument('cluster_id',  help='Cluster Id', metavar="<cluster-id>")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
         args = parser.parse_args(sys.argv[3:])
 
         clusters = self.client.describe_cluster(args.cluster_id)
@@ -499,7 +527,7 @@ class ecHomeCli_Kube(ecHomeParent):
     
     def describe_all(self):
         parser = argparse.ArgumentParser(description='Describe all Kubernetes clusters', prog=f"{APP_NAME} {self.parent_service} describe-all")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
         args = parser.parse_args(sys.argv[3:])
 
         clusters = self.client.describe_all_clusters()
@@ -514,7 +542,7 @@ class ecHomeCli_Kube(ecHomeParent):
     def terminate(self):
         parser = argparse.ArgumentParser(description='Terminate a Kubernetes cluster', prog=f"{APP_NAME} {self.parent_service} describe-all")
         parser.add_argument('cluster_id',  help='Cluster Id', metavar="<cluster-id>")
-        #parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        #parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
         args = parser.parse_args(sys.argv[3:])
 
         print(self.client.terminate_cluster(args.cluster_id))
@@ -586,12 +614,15 @@ class ecHomeCli_Access(ecHomeParent):
         self.session = Session()
         self.client = self.session.client("Access")
 
+        format = self.session.config.config_value("format", self.session.current_profile)
+        self.format = format if format else DEFAULT_FORMAT
+
         self.parent_service_argparse()
 
     def describe(self):
         parser = argparse.ArgumentParser(description='Describe a specific user', prog=f"{APP_NAME} {self.parent_service} describe")
         parser.add_argument('username',  help='Username or user id', metavar="<username>")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
         args = parser.parse_args(sys.argv[3:])
 
         users = self.client.describe_user(args.username)
@@ -614,7 +645,7 @@ class ecHomeCli_Access(ecHomeParent):
     
     def describe_all(self):
         parser = argparse.ArgumentParser(description='Describe all users', prog=f"{APP_NAME} {self.parent_service} describe-all")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
         args = parser.parse_args(sys.argv[3:])
 
         users = self.client.describe_all()
@@ -628,7 +659,7 @@ class ecHomeCli_Access(ecHomeParent):
     
     def describe_caller(self):
         parser = argparse.ArgumentParser(description='Describe caller', prog=f"{APP_NAME} {self.parent_service} describe-caller")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
         args = parser.parse_args(sys.argv[3:])
 
         users = self.client.describe_caller()
@@ -662,7 +693,7 @@ class ecHomeCli_Access(ecHomeParent):
 
     def delete(self):
         parser = argparse.ArgumentParser(description="Delete a user or a user's API keys", prog=f"{APP_NAME} {self.parent_service} delete")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.session.format)
+        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
         args = parser.parse_args(sys.argv[3:])
 
         users = self.client.delete()
