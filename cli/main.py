@@ -31,7 +31,7 @@ The most commonly used ecHome service commands are:
    images     Create and manage guest and user images for virtual machines.
    network    Create and manage virtual networks.
    kube       Create and manage Kubernetes clusters.
-   access     Create and manage User accounts, tokens, and policies.
+   identity   Create and manage User accounts, tokens, and policies.
 ''')
         parser.add_argument('service', help='Service to interact with')
         # parse_args defaults to [1:] for args, but you need to
@@ -59,8 +59,8 @@ The most commonly used ecHome service commands are:
     def kube(self):
         ecHomeCli_Kube()
 
-    def access(self):
-        ecHomeCli_Access()
+    def identity(self):
+        ecHomeCli_Identity()
     
     def version(self):
         print(__version__)
@@ -602,17 +602,17 @@ class ecHomeCli_Kube(ecHomeParent):
         #TODO: Return exit value if command does not work
         exit()
 
-class ecHomeCli_Access(ecHomeParent):
+class ecHomeCli_Identity(ecHomeParent):
 
     def __init__(self):
-        self.parent_service = "access"
-        self.parent_full_name = "Access"
+        self.parent_service = "identity"
+        self.parent_full_name = "Identity"
 
         self.table_headers = ["Name", "Username", "User ID", "Type", "Created"]
         self.data_columns=["name", "username", "user_id", "type", "created"]
 
         self.session = Session()
-        self.client = self.session.client("Access")
+        self.client = self.session.client("Identity")
 
         format = self.session.config.config_value("format", self.session.current_profile)
         self.format = format if format else DEFAULT_FORMAT
