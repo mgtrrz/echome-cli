@@ -16,6 +16,18 @@ Types of changes:
 
 ## [Unreleased]
 
+## [0.3.0] - 2021-11-12
+
+### Added
+- Support for new endpoints with updated python-sdk library
+- Some commands now have an extra flag for producing wider table output with more information
+
+### Changed
+- Help/Usage output is more consolidated and easier to read
+- Consolidated commands to match the endpoints
+- The format argument (--format, -f) has been changed to --output, -o. The options have stayed the same
+
+
 ## [0.2.0] - 2021-04-03
 
 ### Fixed 
