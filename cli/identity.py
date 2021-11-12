@@ -20,15 +20,13 @@ class IdentityService(BaseService):
         self.session = Session()
         self.client = self.session.client("Identity")
 
-        format = self.session.config.config_value("format", self.session.current_profile)
-        self.format = format if format else DEFAULT_FORMAT
-
         self.parent_service_argparse()
+
 
     def describe(self):
         parser = argparse.ArgumentParser(description='Describe a specific user', prog=f"{APP_NAME} {self.parent_service} describe")
         parser.add_argument('username',  help='Username or user id', metavar="<username>")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
+        parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         args = parser.parse_args(sys.argv[3:])
 
         users = self.client.describe_user(args.username)
@@ -49,9 +47,10 @@ class IdentityService(BaseService):
         #TODO: Return exit value if command does not work
         exit()
     
+
     def describe_all(self):
         parser = argparse.ArgumentParser(description='Describe all users', prog=f"{APP_NAME} {self.parent_service} describe-all")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
+        parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         args = parser.parse_args(sys.argv[3:])
 
         users = self.client.describe_all()
@@ -63,9 +62,10 @@ class IdentityService(BaseService):
         #TODO: Return exit value if command does not work
         exit()
     
+
     def describe_caller(self):
         parser = argparse.ArgumentParser(description='Describe caller', prog=f"{APP_NAME} {self.parent_service} describe-caller")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
+        parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         args = parser.parse_args(sys.argv[3:])
 
         users = self.client.describe_caller()
@@ -77,6 +77,7 @@ class IdentityService(BaseService):
         #TODO: Return exit value if command does not work
         exit()
     
+
     def create(self):
         parser = argparse.ArgumentParser(description='Create user or API keys', prog=f"{APP_NAME} {self.parent_service} create")
         parser.add_argument('--username', help='Username. This will be used for login.', required=True, metavar="<value>", dest="Username")
@@ -97,16 +98,13 @@ class IdentityService(BaseService):
         #TODO: Return exit value if command does not work
         exit()
 
+
     def delete(self):
         parser = argparse.ArgumentParser(description="Delete a user or a user's API keys", prog=f"{APP_NAME} {self.parent_service} delete")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
         args = parser.parse_args(sys.argv[3:])
 
-        users = self.client.delete()
-        if args.format == "table":
-            self.print_table(users)
-        elif args.format == "json":
-            print(json.dumps(users, indent=4))
+        results = self.client.delete()
+        self.print_output(results, "json")
         
         #TODO: Return exit value if command does not work
         exit()

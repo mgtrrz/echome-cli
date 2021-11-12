@@ -4,12 +4,19 @@ import json
 from functools import reduce
 import operator
 from tabulate import tabulate
-from defaults import APP_NAME
+from defaults import APP_NAME, DEFAULT_FORMAT
 
 
 class BaseService:
     parser = None
     root_parser = None
+
+    output_flag_args = ["--output", "-o"]
+    output_flag_kwargs = {
+        'help': 'Output format as JSON or Table',
+        'choices': ["table", "json"],
+        'default': DEFAULT_FORMAT
+    }
 
     exclusions = []
 
@@ -26,6 +33,9 @@ class BaseService:
         self.parser = parser
         args = parser.parse_args(sys.argv[2:3])
         subcommand = str(args.subcommand).replace("-", "_")
+
+        # Set the default output (if not set by the user)
+        #self.output_flag_kwargs["default"] = self.session.config.config_value
 
         if not hasattr(self, subcommand):
             print('Unrecognized subcommand')

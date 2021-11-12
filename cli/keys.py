@@ -20,14 +20,12 @@ class KeysService(BaseService):
         self.session = Session()
         self.client = self.session.client("SshKey")
 
-        format = self.session.config.config_value("format", self.session.current_profile)
-        self.format = format if format else DEFAULT_FORMAT
-
         self.parent_service_argparse()
+    
     
     def describe_all(self):
         parser = argparse.ArgumentParser(description='Describe all SSH Keys', prog=f"{APP_NAME} {self.parent_service} describe-all")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
+        parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         args = parser.parse_args(sys.argv[3:])
         
         contents = self.client.describe_all()
@@ -35,10 +33,11 @@ class KeysService(BaseService):
         
         exit()
     
+
     def describe(self):
         parser = argparse.ArgumentParser(description='Describe an SSH Key', prog=f"{APP_NAME} {self.parent_service} describe")
         parser.add_argument('key_name',  help='SSH Key Name', metavar="<key-name>")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
+        parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         args = parser.parse_args(sys.argv[3:])
         
         contents = self.client.describe(args.key_name)
@@ -46,6 +45,7 @@ class KeysService(BaseService):
         
         exit()
     
+
     def create(self):
         parser = argparse.ArgumentParser(description='Create an SSH Key', prog=f"{APP_NAME} {self.parent_service} create")
         parser.add_argument('key_name',  help='SSH Key Name', metavar="<key-name>")
@@ -77,6 +77,7 @@ class KeysService(BaseService):
         print(json.dumps(response, indent=4))
         #TODO: Return exit value if command does not work
         exit()
+
 
     def delete(self):
         parser = argparse.ArgumentParser(description='Delete an SSH Key', prog=f"{APP_NAME} {self.parent_service} delete")

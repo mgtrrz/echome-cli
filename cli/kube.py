@@ -20,15 +20,13 @@ class KubeService(BaseService):
         self.session = Session()
         self.client = self.session.client("Kube")
 
-        format = self.session.config.config_value("format", self.session.current_profile)
-        self.format = format if format else DEFAULT_FORMAT
-
         self.parent_service_argparse()
+
 
     def describe(self):
         parser = argparse.ArgumentParser(description='Describe a Kubernetes cluster', prog=f"{APP_NAME} {self.parent_service} describe")
         parser.add_argument('cluster_id',  help='Cluster Id', metavar="<cluster-id>")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
+        parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         args = parser.parse_args(sys.argv[3:])
 
         clusters = self.client.describe_cluster(args.cluster_id)
@@ -40,9 +38,10 @@ class KubeService(BaseService):
         #TODO: Return exit value if command does not work
         exit()
     
+
     def describe_all(self):
         parser = argparse.ArgumentParser(description='Describe all Kubernetes clusters', prog=f"{APP_NAME} {self.parent_service} describe-all")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
+        parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         args = parser.parse_args(sys.argv[3:])
 
         clusters = self.client.describe_all_clusters()
@@ -54,10 +53,10 @@ class KubeService(BaseService):
         #TODO: Return exit value if command does not work
         exit()
     
+
     def terminate(self):
         parser = argparse.ArgumentParser(description='Terminate a Kubernetes cluster', prog=f"{APP_NAME} {self.parent_service} describe-all")
         parser.add_argument('cluster_id',  help='Cluster Id', metavar="<cluster-id>")
-        #parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
         args = parser.parse_args(sys.argv[3:])
 
         print(self.client.terminate_cluster(args.cluster_id))
@@ -65,6 +64,7 @@ class KubeService(BaseService):
         #TODO: Return exit value if command does not work
         exit()
     
+
     def get_config(self):
         parser = argparse.ArgumentParser(description='Obtain the Kubernetes Admin config file', prog=f"{APP_NAME} {self.parent_service} get-config")
         parser.add_argument('cluster_id',  help='Cluster Id', metavar="<cluster-id>")
@@ -94,6 +94,7 @@ class KubeService(BaseService):
         
         exit()
     
+
     def create(self):
         parser = argparse.ArgumentParser(description='Create a Kubernetes cluster', prog=f"{APP_NAME} {self.parent_service} describe-all")
         parser.add_argument('--image-id', help='Image Id', required=True, metavar="<value>", dest="ImageId")

@@ -23,16 +23,13 @@ class NetworkService(BaseService):
         self.session = Session()
         self.client:Network = self.session.client("Network")
 
-        format = self.session.config.config_value("format", self.session.current_profile)
-        self.format = format if format else DEFAULT_FORMAT
-
         self.parent_service_argparse()
 
 
     def describe(self):
         parser = argparse.ArgumentParser(description='Describe a virtual network', prog=f"{APP_NAME} {self.parent_service} describe")
         parser.add_argument('network_id',  help='Network Id', metavar="<network-id>")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
+        parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         parser.add_argument('--wide', '-w', help='More descriptive output when in Table view', action='store_true', default=False)
         args = parser.parse_args(sys.argv[3:])
 
@@ -54,7 +51,7 @@ class NetworkService(BaseService):
 
     def describe_all(self):
         parser = argparse.ArgumentParser(description='Describe all virtual networks', prog=f"{APP_NAME} {self.parent_service} describe-all")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
+        parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         parser.add_argument('--wide', '-w', help='More descriptive output when in Table view', action='store_true', default=False)
         args = parser.parse_args(sys.argv[3:])
 

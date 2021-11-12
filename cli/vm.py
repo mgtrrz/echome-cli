@@ -23,19 +23,16 @@ class VmService(BaseService):
         self.session = Session()
         self.client:Vm = self.session.client("Vm")
 
-        format = self.session.config.config_value("format", self.session.current_profile)
-        self.format = format if format else DEFAULT_FORMAT
-
         self.parent_service_argparse()
     
 
     def describe_all_vms(self):
         parser = argparse.ArgumentParser(description='Describe all virtual machines', prog=f"{APP_NAME} {self.parent_service} describe-all-vms")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
+        parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         args = parser.parse_args(sys.argv[3:])
 
         items = self.client.describe_all_vms()
-        self.print_output(items["results"], args.format, self.print_vm_table)
+        self.print_output(items["results"], args.output, self.print_vm_table)
 
         exit()
     
@@ -43,11 +40,11 @@ class VmService(BaseService):
     def describe_vm(self):
         parser = argparse.ArgumentParser(description='Describe a virtual machine', prog=f"{APP_NAME} {self.parent_service} describe-vm")
         parser.add_argument('vm_id',  help='Virtual Machine Id', metavar="<vm-id>")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
+        parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         args = parser.parse_args(sys.argv[3:])
 
         vm = self.client.describe_vm(args.vm_id)
-        self.print_output(vm["results"], args.format, self.print_vm_table)
+        self.print_output(vm["results"], args.output, self.print_vm_table)
         
         exit()
 
@@ -124,7 +121,7 @@ class VmService(BaseService):
     def describe_guest_image(self):
         parser = argparse.ArgumentParser(description='Describe a guest image', prog=f"{APP_NAME} {self.parent_service} describe-guest-image")
         parser.add_argument('image_id',  help='Image Id', metavar="<image-id>")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
+        parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         args = parser.parse_args(sys.argv[3:])
 
         image = self.client.describe_guest_image(args.image_id)
@@ -137,7 +134,7 @@ class VmService(BaseService):
     def describe_user_image(self):
         parser = argparse.ArgumentParser(description='Describe a user image', prog=f"{APP_NAME} {self.parent_service} describe-user-image")
         parser.add_argument('image_id',  help='Image Id', metavar="<image-id>")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
+        parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         args = parser.parse_args(sys.argv[3:])
 
         image = self.client.describe_user_image(args.image_id)
@@ -149,7 +146,7 @@ class VmService(BaseService):
 
     def describe_all_guest_images(self):
         parser = argparse.ArgumentParser(description='Describe all guest images', prog=f"{APP_NAME} {self.parent_service} describe-all-guest-images")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
+        parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         args = parser.parse_args(sys.argv[3:])
 
         images = self.client.describe_all_guest_images()
@@ -161,7 +158,7 @@ class VmService(BaseService):
 
     def describe_all_user_images(self):
         parser = argparse.ArgumentParser(description='Describe all user images', prog=f"{APP_NAME} {self.parent_service} describe-all-user-images")
-        parser.add_argument('--format', '-f', help='Output format as JSON or Table', choices=["table", "json"], default=self.format)
+        parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         args = parser.parse_args(sys.argv[3:])
 
         images = self.client.describe_all_user_images()
