@@ -4,7 +4,7 @@ import json
 from echome import Session
 from echome.network import Network
 from base_service import BaseService
-from defaults import DEFAULT_FORMAT, APP_NAME
+from defaults import APP_NAME
 
 class NetworkService(BaseService):
 

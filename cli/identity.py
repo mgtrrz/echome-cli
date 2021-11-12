@@ -4,7 +4,7 @@ import json
 from echome import Session
 from echome.identity import Identity
 from base_service import BaseService
-from defaults import DEFAULT_FORMAT, APP_NAME
+from defaults import APP_NAME
 
 class IdentityService(BaseService):
     
@@ -18,7 +18,7 @@ class IdentityService(BaseService):
         self.data_columns=["name", "username", "user_id", "type", "created"]
 
         self.session = Session()
-        self.client = self.session.client("Identity")
+        self.client:Identity = self.session.client("Identity")
 
         self.parent_service_argparse()
 

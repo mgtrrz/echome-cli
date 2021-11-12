@@ -51,7 +51,6 @@ The most commonly used ecHome service commands are:
             parser.print_help()
             exit(1)
 
-        # use dispatch pattern to invoke method with same name
         services[args.service]()
 
 

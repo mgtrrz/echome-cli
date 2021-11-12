@@ -4,7 +4,7 @@ import json
 from echome import Session
 from echome.kube import Kube
 from base_service import BaseService
-from defaults import DEFAULT_FORMAT, APP_NAME
+from defaults import APP_NAME
 
 class KubeService(BaseService):
 
@@ -18,7 +18,7 @@ class KubeService(BaseService):
         self.data_columns=["cluster_id", "primary_controller", "associated_instances", ["status", "status"]]
 
         self.session = Session()
-        self.client = self.session.client("Kube")
+        self.client:Kube = self.session.client("Kube")
 
         self.parent_service_argparse()
 

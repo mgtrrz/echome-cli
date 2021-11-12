@@ -5,7 +5,7 @@ from tabulate import tabulate
 from echome import Session
 from echome.vm import Vm
 from base_service import BaseService
-from defaults import DEFAULT_FORMAT, APP_NAME
+from defaults import APP_NAME
 
 class VmService(BaseService):
 

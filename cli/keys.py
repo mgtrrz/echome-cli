@@ -4,7 +4,7 @@ import json
 from echome import Session
 from echome.keys import Keys
 from base_service import BaseService
-from defaults import DEFAULT_FORMAT, APP_NAME
+from defaults import APP_NAME
 
 class KeysService(BaseService):
 
@@ -18,7 +18,7 @@ class KeysService(BaseService):
         self.data_columns = ["key_name", "key_id", "fingerprint"]
 
         self.session = Session()
-        self.client = self.session.client("SshKey")
+        self.client:Keys = self.session.client("SshKey")
 
         self.parent_service_argparse()
     

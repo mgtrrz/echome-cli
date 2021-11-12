@@ -4,10 +4,13 @@ import json
 from functools import reduce
 import operator
 from tabulate import tabulate
+from echome.session import Session
 from defaults import APP_NAME, DEFAULT_FORMAT
 
 
 class BaseService:
+    session:Session
+
     parser = None
     root_parser = None
 
@@ -48,7 +51,7 @@ class BaseService:
 
     def usage(self):
         """Return CLI usage string with all available commands"""
-        commands = self.get_list_of_methods()
+        commands = self.get_list_of_commands()
         usage  = f"{APP_NAME} {self.parent_service} [command] [subcommands] <options>\n\n"
         usage += f"Available {self.parent_service} commands:\n"
         for cmd in commands:
@@ -58,7 +61,7 @@ class BaseService:
         return usage
 
 
-    def get_list_of_methods(self, exclude=[]):
+    def get_list_of_commands(self, exclude=[]):
         """
         Gets the list of public methods for the class. 
         
@@ -67,7 +70,7 @@ class BaseService:
         method_list = [func for func in dir(self) if callable(getattr(self, func))]
         exclude += [
             "usage",
-            "get_list_of_methods",
+            "get_list_of_commands",
             "parent_service_argparse",
             "get_from_dict",
             "print_table",
