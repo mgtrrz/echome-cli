@@ -21,6 +21,13 @@ class BaseService:
         'default': DEFAULT_FORMAT
     }
 
+    wide_flag_args = ["--wide", "-w"]
+    wide_flags_kwargs = {
+        'help': 'Show more columns when additional data in Table view.',
+        'action': 'store_true',
+        'default': False
+    }
+
     exclusions = []
 
     def parent_service_argparse(self):

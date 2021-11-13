@@ -54,7 +54,5 @@ The most commonly used ecHome service commands are:
         services[args.service]()
 
 
-
-
 if __name__ == "__main__":
     ecHomeCli()

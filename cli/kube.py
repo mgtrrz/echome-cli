@@ -30,9 +30,9 @@ class KubeService(BaseService):
         args = parser.parse_args(sys.argv[3:])
 
         clusters = self.client.describe_cluster(args.cluster_id)
-        if args.format == "table":
+        if args.output == "table":
             self.print_table(clusters)
-        elif args.format == "json":
+        elif args.output == "json":
             print(json.dumps(clusters, indent=4))
         
         #TODO: Return exit value if command does not work
@@ -45,9 +45,9 @@ class KubeService(BaseService):
         args = parser.parse_args(sys.argv[3:])
 
         clusters = self.client.describe_all_clusters()
-        if args.format == "table":
+        if args.output == "table":
             self.print_table(clusters)
-        elif args.format == "json":
+        elif args.output == "json":
             print(json.dumps(clusters, indent=4))
         
         #TODO: Return exit value if command does not work

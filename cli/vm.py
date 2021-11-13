@@ -125,7 +125,7 @@ class VmService(BaseService):
         args = parser.parse_args(sys.argv[3:])
 
         image = self.client.describe_guest_image(args.image_id)
-        self.print_output(image["results"], args.format, self.print_image_table)
+        self.print_output(image["results"], args.output, self.print_image_table)
         
         #TODO: Return exit value if command does not work
         exit()
@@ -138,7 +138,7 @@ class VmService(BaseService):
         args = parser.parse_args(sys.argv[3:])
 
         image = self.client.describe_user_image(args.image_id)
-        self.print_output(image["results"], args.format, self.print_image_table)
+        self.print_output(image["results"], args.output, self.print_image_table)
         
         #TODO: Return exit value if command does not work
         exit()
@@ -150,7 +150,7 @@ class VmService(BaseService):
         args = parser.parse_args(sys.argv[3:])
 
         images = self.client.describe_all_guest_images()
-        self.print_output(images["results"], args.format, self.print_image_table)
+        self.print_output(images["results"], args.output, self.print_image_table)
         
         #TODO: Return exit value if command does not work
         exit()
@@ -162,7 +162,7 @@ class VmService(BaseService):
         args = parser.parse_args(sys.argv[3:])
 
         images = self.client.describe_all_user_images()
-        self.print_output(images["results"], args.format, self.print_image_table)
+        self.print_output(images["results"], args.output, self.print_image_table)
         
         #TODO: Return exit value if command does not work
         exit()

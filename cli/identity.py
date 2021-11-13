@@ -14,8 +14,8 @@ class IdentityService(BaseService):
         self.parent_service = "identity"
         self.parent_full_name = "Identity"
 
-        self.table_headers = ["Name", "Username", "User ID", "Type", "Created"]
-        self.data_columns=["name", "username", "user_id", "type", "created"]
+        self.table_headers = ["Username", "First Name", "Last Name", "User ID", "Active", "Created"]
+        self.data_columns=["username", "first_name", "last_name", "user_id", "is_active", "created"]
 
         self.session = Session()
         self.client:Identity = self.session.client("Identity")
@@ -23,41 +23,26 @@ class IdentityService(BaseService):
         self.parent_service_argparse()
 
 
-    def describe(self):
-        parser = argparse.ArgumentParser(description='Describe a specific user', prog=f"{APP_NAME} {self.parent_service} describe")
+    def describe_user(self):
+        parser = argparse.ArgumentParser(description='Describe a specific user', prog=f"{APP_NAME} {self.parent_service} describe-user")
         parser.add_argument('username',  help='Username or user id', metavar="<username>")
         parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         args = parser.parse_args(sys.argv[3:])
 
         users = self.client.describe_user(args.username)
-        if args.format == "table":
-            if users[0]["auth"]:
-                for auth in users[0]['auth']:
-                    users.append({
-                        "name": "",
-                        "username": "",
-                        "user_id": auth['auth_id'],
-                        "created": auth['created'],
-                        "type": auth['type'],
-                    })
-            self.print_table(users)
-        elif args.format == "json":
-            print(json.dumps(users, indent=4))
+        self.print_output(users["results"], args.output)
         
         #TODO: Return exit value if command does not work
         exit()
     
 
-    def describe_all(self):
-        parser = argparse.ArgumentParser(description='Describe all users', prog=f"{APP_NAME} {self.parent_service} describe-all")
+    def describe_all_users(self):
+        parser = argparse.ArgumentParser(description='Describe all users', prog=f"{APP_NAME} {self.parent_service} describe-all-users")
         parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         args = parser.parse_args(sys.argv[3:])
 
-        users = self.client.describe_all()
-        if args.format == "table":
-            self.print_table(users)
-        elif args.format == "json":
-            print(json.dumps(users, indent=4))
+        users = self.client.describe_all_users()
+        self.print_output(users["results"], args.output)
         
         #TODO: Return exit value if command does not work
         exit()
@@ -69,17 +54,14 @@ class IdentityService(BaseService):
         args = parser.parse_args(sys.argv[3:])
 
         users = self.client.describe_caller()
-        if args.format == "table":
-            self.print_table(users)
-        elif args.format == "json":
-            print(json.dumps(users, indent=4))
+        self.print_output(users["results"], args.output)
         
         #TODO: Return exit value if command does not work
         exit()
     
 
-    def create(self):
-        parser = argparse.ArgumentParser(description='Create user or API keys', prog=f"{APP_NAME} {self.parent_service} create")
+    def create_user(self):
+        parser = argparse.ArgumentParser(description='Create user or API keys', prog=f"{APP_NAME} {self.parent_service} create-user")
         parser.add_argument('--username', help='Username. This will be used for login.', required=True, metavar="<value>", dest="Username")
         parser.add_argument('--email', help='Email address of the user.', required=False, metavar="<value>", dest="Email")
         parser.add_argument('--name', help='Name of the user', required=False, metavar="<value>", dest="InstanceSize")
@@ -99,8 +81,8 @@ class IdentityService(BaseService):
         exit()
 
 
-    def delete(self):
-        parser = argparse.ArgumentParser(description="Delete a user or a user's API keys", prog=f"{APP_NAME} {self.parent_service} delete")
+    def delete_user(self):
+        parser = argparse.ArgumentParser(description="Delete a user or a user's API keys", prog=f"{APP_NAME} {self.parent_service} delete-user")
         args = parser.parse_args(sys.argv[3:])
 
         results = self.client.delete()
