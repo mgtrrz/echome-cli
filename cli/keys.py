@@ -51,7 +51,7 @@ class KeysService(BaseService):
         exit()
     
 
-    def create_key(self):
+    def create_sshkey(self):
         parser = argparse.ArgumentParser(description='Create an SSH Key', prog=f"{APP_NAME} {self.parent_service} create-sshkey")
         parser.add_argument('key_name',  help='SSH Key Name', metavar="<key-name>")
 
@@ -61,8 +61,8 @@ class KeysService(BaseService):
 
         args = parser.parse_args(sys.argv[3:])
 
-        response = self.client.create(args.key_name)
-        if "error" in response:
+        response = self.client.create_sshkey(args.key_name)
+        if response["success"] == False:
            print(response)
            exit(1)
 
@@ -84,7 +84,7 @@ class KeysService(BaseService):
         exit()
 
 
-    def delete_key(self):
+    def delete_sshkey(self):
         parser = argparse.ArgumentParser(description='Delete an SSH Key', prog=f"{APP_NAME} {self.parent_service} delete-key")
         parser.add_argument('key_name',  help='SSH Key Name', metavar="<key-name>")
         args = parser.parse_args(sys.argv[3:])

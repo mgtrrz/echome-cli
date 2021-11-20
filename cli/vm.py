@@ -53,7 +53,7 @@ class VmService(BaseService):
         parser = argparse.ArgumentParser(description='Create a virtual machine', prog=f"{APP_NAME} {self.parent_service} create-vm")
 
         parser.add_argument('--image-id', help='Image Id', required=True, metavar="<value>", dest="ImageId")
-        parser.add_argument('--instance-size', help='Instance Size', required=True, metavar="<value>", dest="InstanceSize")
+        parser.add_argument('--instance-type', help='Instance Size', required=True, metavar="<value>", dest="InstanceType")
         parser.add_argument('--network-profile', help='Network type', required=True, metavar="<value>", dest="NetworkProfile")
         parser.add_argument('--private-ip', help='Network private IP', metavar="<value>", dest="PrivateIp")
         parser.add_argument('--key-name', help='Key name', metavar="<value>", dest="KeyName")
