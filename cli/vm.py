@@ -58,16 +58,50 @@ class VmService(BaseService):
         parser.add_argument('--private-ip', help='Network private IP', metavar="<value>", dest="PrivateIp")
         parser.add_argument('--key-name', help='Key name', metavar="<value>", dest="KeyName")
         parser.add_argument('--disk-size', help='Disk size', metavar="<value>", dest="DiskSize")
+        parser.add_argument('--name', help='Name of the instance', metavar="<value>")
         parser.add_argument('--tags', help='Tags', type=json.loads, metavar='{"Key": "Value", "Key": "Value"}', dest="Tags")
+        parser.add_argument('--enable-vnc', help='Enable VNC', action='store_true', dest="EnableVnc")
+        parser.add_argument('--vnc-port', help='VNC port to use if enabled', metavar="<value>", dest="VncPort")
+        parser.add_argument('--user-data-file', help='Add user data scripts to the cloud instance. This file does not need to be base64 encoded, the CLI will do this for you.', \
+          metavar="./example-file.sh", dest="UserDataScript")
         args = parser.parse_args(sys.argv[3:])
+
+        items = vars(args)
+
+        if "UserDataScript" in items:
+            try:
+                with open(items["UserDataScript"]) as f:
+                    items["UserDataScript"] = f.read()
+            except OSError as err:
+                print(err)
+                print("File Opening error!")
+                exit(1)
+        
+        if "name" in items:
+            items["Tags"]["Name"] = items["name"]
+            items.pop("name", None)
 
         # ** unpacks the arguments, vars() returns the variables and provides them to client.create() as
         # ImageId=gmi-12345, InstanceSize=standard.small, etc.
-        resp = self.client.create_vm(**vars(args))
+        resp = self.client.create_vm(**items)
         self.print_output(resp, "json")
         #TODO: Return exit value if command does not work
         exit()
     
+
+    def create_vm_image(self):
+        parser = argparse.ArgumentParser(description='Create an image of an existing virtual machine', prog=f"{APP_NAME} {self.parent_service} create-vm-image")
+        parser.add_argument('vm_id',  help='Existing Virtual Machine Id', metavar="<vm-id>")
+        parser.add_argument('--name',  help='Name of the new image', metavar="<image-name>", dest="Name", required=True)
+        parser.add_argument('--description',  help='Description of the new image', metavar="<image-desc>", dest="Description", required=True)
+        parser.add_argument('--tags', help='Tags', type=json.loads, metavar='{"Key": "Value", "Key": "Value"}', dest="Tags")
+        args = parser.parse_args(sys.argv[3:])
+
+        resp = self.client.create_vm_image(**vars(args))
+        self.print_output(resp, "json")
+        #TODO: Return exit value if command does not work
+        exit()
+
 
     def start_vm(self):
         parser = argparse.ArgumentParser(description='Start a virtual machine', prog=f"{APP_NAME} {self.parent_service} start-vm")
@@ -111,7 +145,7 @@ class VmService(BaseService):
         parser.add_argument('--tags', help='Tags', type=json.loads, metavar='{"Key": "Value", "Key": "Value"}', dest="Tags")
         args = parser.parse_args(sys.argv[3:])
 
-        resp = self.client.register_guest_image.register(**vars(args))
+        resp = self.client.register_guest_image(**vars(args))
         self.print_output(resp, "json")
 
         #TODO: Return exit value if command does not work
