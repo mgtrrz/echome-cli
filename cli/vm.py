@@ -58,17 +58,16 @@ class VmService(BaseService):
         parser.add_argument('--private-ip', help='Network private IP', metavar="<value>", dest="PrivateIp")
         parser.add_argument('--key-name', help='Key name', metavar="<value>", dest="KeyName")
         parser.add_argument('--disk-size', help='Disk size', metavar="<value>", dest="DiskSize")
-        parser.add_argument('--name', help='Name of the instance', metavar="<value>")
+        parser.add_argument('--name', help='Name of the instance', metavar="<value>", dest="Name")
         parser.add_argument('--tags', help='Tags', type=json.loads, metavar='{"Key": "Value", "Key": "Value"}', dest="Tags")
         parser.add_argument('--enable-vnc', help='Enable VNC', action='store_true', dest="EnableVnc")
         parser.add_argument('--vnc-port', help='VNC port to use if enabled', metavar="<value>", dest="VncPort")
         parser.add_argument('--user-data-file', help='Add user data scripts to the cloud instance. This file does not need to be base64 encoded, the CLI will do this for you.', \
           metavar="./example-file.sh", dest="UserDataScript")
         args = parser.parse_args(sys.argv[3:])
-
         items = vars(args)
 
-        if "UserDataScript" in items:
+        if "UserDataScript" in items and items["UserDataScript"] != None:
             try:
                 with open(items["UserDataScript"]) as f:
                     items["UserDataScript"] = f.read()
@@ -76,10 +75,14 @@ class VmService(BaseService):
                 print(err)
                 print("File Opening error!")
                 exit(1)
+        else:
+            items.pop("UserDataScript", None)
         
-        if "name" in items:
-            items["Tags"]["Name"] = items["name"]
-            items.pop("name", None)
+        if "Name" in items and items["Name"] != None and items["Name"] != "":
+            if items["Tags"] == None:
+                items["Tags"] = {}
+            items["Tags"]["Name"] = items["Name"]
+            items.pop("Name", None)
 
         # ** unpacks the arguments, vars() returns the variables and provides them to client.create() as
         # ImageId=gmi-12345, InstanceSize=standard.small, etc.

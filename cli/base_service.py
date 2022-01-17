@@ -95,6 +95,16 @@ class BaseService:
     def get_from_dict(dict, mapList):
         """Traverse a dictionary to get a nested value from a list """
         return reduce(operator.getitem, mapList, dict)
+    
+
+    @staticmethod
+    def get_from_nested_list(dictionary, keys):
+        items = []
+        for val in dictionary[keys[0]]:
+            if val:
+                items.append(val[keys[1]])
+
+        return ",".join(items)
 
 
     def print_table(self, objlist, header=None, data_columns=None, wide:bool=False):
@@ -119,8 +129,14 @@ class BaseService:
                 if isinstance(col, list):
                     try:
                         res = self.get_from_dict(row, col)
+                    except TypeError:
+                        try:
+                            res = self.get_from_nested_list(row, col)
+                        except Exception:
+                            res = ""
                     except KeyError:
                         res = ""
+                    
                 else:
                     res = row[col]
                 formatted_row.append(res)

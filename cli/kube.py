@@ -14,8 +14,8 @@ class KubeService(BaseService):
         self.parent_service = "kube"
         self.parent_full_name = "Kubernetes"
 
-        self.table_headers = ["Cluster ID", "Primary Node", "Associated Instances", "Status"]
-        self.data_columns=["cluster_id", "primary_controller", "associated_instances", ["status", "status"]]
+        self.table_headers = ["Cluster ID",  "Controller", "Associated Instances", "Status", "Created"]
+        self.data_columns=["cluster_id", "primary", ["associated_instances", "instance_id"], "status", "created"]
 
         self.session = Session()
         self.client:Kube = self.session.client("Kube")
@@ -31,7 +31,7 @@ class KubeService(BaseService):
 
         clusters = self.client.describe_cluster(args.cluster_id)
         if args.output == "table":
-            self.print_table(clusters)
+            self.print_table(clusters["results"])
         elif args.output == "json":
             print(json.dumps(clusters, indent=4))
         
@@ -46,7 +46,7 @@ class KubeService(BaseService):
 
         clusters = self.client.describe_all_clusters()
         if args.output == "table":
-            self.print_table(clusters)
+            self.print_table(clusters["results"])
         elif args.output == "json":
             print(json.dumps(clusters, indent=4))
         
@@ -76,7 +76,7 @@ class KubeService(BaseService):
         args = parser.parse_args(sys.argv[3:])
 
         try:
-            kube_config = self.client.get_kube_config(args.cluster_id)['kube_config']
+            kube_config = self.client.get_kube_config(args.cluster_id)['results']['admin.conf']
         except Exception:
             print("There was an error when attempting to retrieve the config file.")
             exit(1)
@@ -101,9 +101,6 @@ class KubeService(BaseService):
         parser.add_argument('--instance-size', help='Instance Size', required=True, metavar="<value>", dest="InstanceSize")
         parser.add_argument('--network-profile', help='Network type', required=True, metavar="<value>", dest="NetworkProfile")
         parser.add_argument('--controller-ip', help='IP address of the primary controller', required=True, metavar="<value>", dest="ControllerIp")
-        parser.add_argument('--node-ips', help='IPs for each additional node separated by a comma. At least one must be provided. \
-             These must be in the same network as the provided network profile. Each IP added represents a new node.', 
-             metavar='<ip>, <ip>, etc.', required=True, dest="NodeIps")
         parser.add_argument('--key-name', help='Key name', metavar="<value>", dest="KeyName")
         parser.add_argument('--disk-size', help='Disk size', metavar="<value>", dest="DiskSize")
         parser.add_argument('--tags', help='Tags', type=json.loads, metavar='{"Key": "Value", "Key": "Value"}', dest="Tags")
