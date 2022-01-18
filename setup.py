@@ -21,7 +21,7 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     install_requires=[
-        'echome-sdk>=0.4.0',
+        'echome-sdk<=1.0.0',
         'requests>=2.24',
         'tabulate>=0.8.7'
     ],
