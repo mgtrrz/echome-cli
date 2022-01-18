@@ -16,6 +16,12 @@ Types of changes:
 
 ## [Unreleased]
 
+## [0.4.0] - 2022-01-17
+
+### Changed
+- Better Kubernetes support
+- Uses new version of ecHome Python SDK
+
 ## [0.3.0] - 2021-11-12
 
 ### Added
@@ -47,6 +53,9 @@ Types of changes:
 ### Added
 - Initial import of ecHome CLI
 
-[unreleased]: https://github.com/mgtrrz/echome-cli/compare/0.1.1...HEAD
+[unreleased]: https://github.com/mgtrrz/echome-cli/compare/0.4.0...HEAD
+[0.4.0]: https://github.com/mgtrrz/echome-cli/compare/0.3.0...0.4.0
+[0.3.0]: https://github.com/mgtrrz/echome-cli/compare/0.2.0...0.3.0
+[0.2.0]: https://github.com/mgtrrz/echome-cli/compare/0.1.0...0.2.0
 [0.1.1]: https://github.com/mgtrrz/echome-cli/compare/0.1.0...0.1.1
 [0.1.0]: https://github.com/mgtrrz/echome-cli/releases/tag/0.1.0
