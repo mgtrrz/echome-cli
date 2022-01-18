@@ -98,17 +98,13 @@ class KubeService(BaseService):
     def create(self):
         parser = argparse.ArgumentParser(description='Create a Kubernetes cluster', prog=f"{APP_NAME} {self.parent_service} describe-all")
         parser.add_argument('--image-id', help='Image Id', required=True, metavar="<value>", dest="ImageId")
-        parser.add_argument('--instance-size', help='Instance Size', required=True, metavar="<value>", dest="InstanceSize")
+        parser.add_argument('--instance-type', help='Instance Size', required=True, metavar="<value>", dest="InstanceType")
         parser.add_argument('--network-profile', help='Network type', required=True, metavar="<value>", dest="NetworkProfile")
         parser.add_argument('--controller-ip', help='IP address of the primary controller', required=True, metavar="<value>", dest="ControllerIp")
         parser.add_argument('--key-name', help='Key name', metavar="<value>", dest="KeyName")
         parser.add_argument('--disk-size', help='Disk size', metavar="<value>", dest="DiskSize")
         parser.add_argument('--tags', help='Tags', type=json.loads, metavar='{"Key": "Value", "Key": "Value"}', dest="Tags")
         args = parser.parse_args(sys.argv[3:])
-
-        # Convert node IPs into list.
-        args.NodeIps = str(args.NodeIps).strip().split(",")
-        print(args)
 
         print(self.client.create_cluster(**vars(args)))
         

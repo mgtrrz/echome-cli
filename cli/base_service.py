@@ -81,7 +81,8 @@ class BaseService:
             "parent_service_argparse",
             "get_from_dict",
             "print_table",
-            "print_output"
+            "print_output",
+            "get_from_nested_list",
         ] + self.exclusions
 
         methods = []
