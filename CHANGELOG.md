@@ -16,6 +16,11 @@ Types of changes:
 
 ## [Unreleased]
 
+## [0.3.1] - 2022-01-25
+
+### Fixed
+- Issue with Python imports
+
 ## [0.3.0] - 2022-01-25
 
 ### Added
@@ -48,7 +53,8 @@ Types of changes:
 ### Added
 - Initial import of ecHome CLI
 
-[unreleased]: https://github.com/mgtrrz/echome-cli/compare/0.3.0...HEAD
+[unreleased]: https://github.com/mgtrrz/echome-cli/compare/0.3.1...HEAD
+[0.3.1]: https://github.com/mgtrrz/echome-cli/compare/0.3.0...0.3.1
 [0.3.0]: https://github.com/mgtrrz/echome-cli/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/mgtrrz/echome-cli/compare/0.1.0...0.2.0
 [0.1.1]: https://github.com/mgtrrz/echome-cli/compare/0.1.0...0.1.1
