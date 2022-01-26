@@ -16,7 +16,7 @@ Types of changes:
 
 ## [Unreleased]
 
-## [0.4.0] - 2022-01-17
+## [0.4.0] - 2022-01-25
 
 ### Changed
 - Better Kubernetes support
