@@ -4,8 +4,8 @@ import json
 from tabulate import tabulate
 from echome import Session
 from echome.vm import Vm
-from base_service import BaseService
-from defaults import APP_NAME
+from .base_service import BaseService
+from .defaults import APP_NAME
 
 class VmService(BaseService):
 

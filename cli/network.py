@@ -3,8 +3,8 @@ import argparse
 import json
 from echome import Session
 from echome.network import Network
-from base_service import BaseService
-from defaults import APP_NAME
+from .base_service import BaseService
+from .defaults import APP_NAME
 
 class NetworkService(BaseService):
 

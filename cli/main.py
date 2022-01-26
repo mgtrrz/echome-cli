@@ -5,12 +5,12 @@ __author__ = 'Marcus Gutierrez'
 import sys
 import argparse
 import logging
-from identity import IdentityService
-from keys import KeysService
-from kube import KubeService
-from network import NetworkService
-from vm import VmService
-from defaults import APP_NAME
+from .identity import IdentityService
+from .keys import KeysService
+from .kube import KubeService
+from .network import NetworkService
+from .vm import VmService
+from .defaults import APP_NAME
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)

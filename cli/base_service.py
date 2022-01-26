@@ -1,11 +1,11 @@
 import sys
 import argparse
 import json
-from functools import reduce
 import operator
+from functools import reduce
 from tabulate import tabulate
 from echome.session import Session
-from defaults import APP_NAME, DEFAULT_FORMAT
+from .defaults import APP_NAME, DEFAULT_FORMAT
 
 
 class BaseService:
