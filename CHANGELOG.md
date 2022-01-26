@@ -16,13 +16,7 @@ Types of changes:
 
 ## [Unreleased]
 
-## [0.4.0] - 2022-01-25
-
-### Changed
-- Better Kubernetes support
-- Uses new version of ecHome Python SDK
-
-## [0.3.0] - 2021-11-12
+## [0.3.0] - 2022-01-25
 
 ### Added
 - Support for new endpoints with updated python-sdk library
@@ -32,7 +26,8 @@ Types of changes:
 - Help/Usage output is more consolidated and easier to read
 - Consolidated commands to match the endpoints
 - The format argument (--format, -f) has been changed to --output, -o. The options have stayed the same
-
+- Better Kubernetes support
+- Uses latest version of ecHome Python SDK
 
 ## [0.2.0] - 2021-04-03
 
@@ -53,8 +48,7 @@ Types of changes:
 ### Added
 - Initial import of ecHome CLI
 
-[unreleased]: https://github.com/mgtrrz/echome-cli/compare/0.4.0...HEAD
-[0.4.0]: https://github.com/mgtrrz/echome-cli/compare/0.3.0...0.4.0
+[unreleased]: https://github.com/mgtrrz/echome-cli/compare/0.3.0...HEAD
 [0.3.0]: https://github.com/mgtrrz/echome-cli/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/mgtrrz/echome-cli/compare/0.1.0...0.2.0
 [0.1.1]: https://github.com/mgtrrz/echome-cli/compare/0.1.0...0.1.1
