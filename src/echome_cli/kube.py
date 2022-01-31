@@ -23,8 +23,8 @@ class KubeService(BaseService):
         self.parent_service_argparse()
 
 
-    def describe(self):
-        parser = argparse.ArgumentParser(description='Describe a Kubernetes cluster', prog=f"{APP_NAME} {self.parent_service} describe")
+    def describe_cluster(self):
+        parser = argparse.ArgumentParser(description='Describe a Kubernetes cluster', prog=f"{APP_NAME} {self.parent_service} describe-cluster")
         parser.add_argument('cluster_id',  help='Cluster Id', metavar="<cluster-id>")
         parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         args = parser.parse_args(sys.argv[3:])
@@ -39,8 +39,8 @@ class KubeService(BaseService):
         exit()
     
 
-    def describe_all(self):
-        parser = argparse.ArgumentParser(description='Describe all Kubernetes clusters', prog=f"{APP_NAME} {self.parent_service} describe-all")
+    def describe_all_clusters(self):
+        parser = argparse.ArgumentParser(description='Describe all Kubernetes clusters', prog=f"{APP_NAME} {self.parent_service} describe-all-clusters")
         parser.add_argument(*self.output_flag_args, **self.output_flag_kwargs)
         args = parser.parse_args(sys.argv[3:])
 
@@ -54,8 +54,8 @@ class KubeService(BaseService):
         exit()
     
 
-    def terminate(self):
-        parser = argparse.ArgumentParser(description='Terminate a Kubernetes cluster', prog=f"{APP_NAME} {self.parent_service} describe-all")
+    def terminate_cluster(self):
+        parser = argparse.ArgumentParser(description='Terminate a Kubernetes cluster', prog=f"{APP_NAME} {self.parent_service} terminate-cluster")
         parser.add_argument('cluster_id',  help='Cluster Id', metavar="<cluster-id>")
         args = parser.parse_args(sys.argv[3:])
 
@@ -65,8 +65,8 @@ class KubeService(BaseService):
         exit()
     
 
-    def get_config(self):
-        parser = argparse.ArgumentParser(description='Obtain the Kubernetes Admin config file', prog=f"{APP_NAME} {self.parent_service} get-config")
+    def get_cluster_config(self):
+        parser = argparse.ArgumentParser(description='Obtain the Kubernetes Admin config file', prog=f"{APP_NAME} {self.parent_service} get-cluster-config")
         parser.add_argument('cluster_id',  help='Cluster Id', metavar="<cluster-id>")
 
         group = parser.add_mutually_exclusive_group(required=True)
@@ -95,8 +95,8 @@ class KubeService(BaseService):
         exit()
     
 
-    def create(self):
-        parser = argparse.ArgumentParser(description='Create a Kubernetes cluster', prog=f"{APP_NAME} {self.parent_service} describe-all")
+    def create_cluster(self):
+        parser = argparse.ArgumentParser(description='Create a Kubernetes cluster', prog=f"{APP_NAME} {self.parent_service} create-cluster")
         parser.add_argument('--image-id', help='Image Id', required=True, metavar="<value>", dest="ImageId")
         parser.add_argument('--instance-type', help='Instance Size', required=True, metavar="<value>", dest="InstanceType")
         parser.add_argument('--network-profile', help='Network type', required=True, metavar="<value>", dest="NetworkProfile")
@@ -107,6 +107,23 @@ class KubeService(BaseService):
         args = parser.parse_args(sys.argv[3:])
 
         print(self.client.create_cluster(**vars(args)))
+        
+        #TODO: Return exit value if command does not work
+        exit()
+
+
+    def add_node(self):
+        parser = argparse.ArgumentParser(description='Create a Kubernetes cluster', prog=f"{APP_NAME} {self.parent_service} add-node")
+        parser.add_argument('--image-id', help='Image Id', required=True, metavar="<value>", dest="ImageId")
+        parser.add_argument('--instance-type', help='Instance Size', required=True, metavar="<value>", dest="InstanceType")
+        parser.add_argument('--network-profile', help='Network type', required=True, metavar="<value>", dest="NetworkProfile")
+        parser.add_argument('--cluster-id', help='Cluster ID to add the node to', required=True, metavar="<value>", dest="ClusterIp")
+        parser.add_argument('--key-name', help='Key name', metavar="<value>", dest="KeyName")
+        parser.add_argument('--disk-size', help='Disk size', metavar="<value>", dest="DiskSize")
+        parser.add_argument('--tags', help='Tags', type=json.loads, metavar='{"Key": "Value", "Key": "Value"}', dest="Tags")
+        args = parser.parse_args(sys.argv[3:])
+
+        print(self.client.add_node(**vars(args)))
         
         #TODO: Return exit value if command does not work
         exit()
