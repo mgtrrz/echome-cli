@@ -114,10 +114,11 @@ class KubeService(BaseService):
 
     def add_node(self):
         parser = argparse.ArgumentParser(description='Create a Kubernetes cluster', prog=f"{APP_NAME} {self.parent_service} add-node")
+        parser.add_argument('--cluster-id', help='Cluster ID to add the node to', required=True, metavar="<value>", dest="cluster_id")
         parser.add_argument('--image-id', help='Image Id', required=True, metavar="<value>", dest="ImageId")
         parser.add_argument('--instance-type', help='Instance Size', required=True, metavar="<value>", dest="InstanceType")
         parser.add_argument('--network-profile', help='Network type', required=True, metavar="<value>", dest="NetworkProfile")
-        parser.add_argument('--cluster-id', help='Cluster ID to add the node to', required=True, metavar="<value>", dest="ClusterIp")
+        parser.add_argument('--node-ip', help='IP address for the new node', required=True, metavar="<value>", dest="NodeIp")
         parser.add_argument('--key-name', help='Key name', metavar="<value>", dest="KeyName")
         parser.add_argument('--disk-size', help='Disk size', metavar="<value>", dest="DiskSize")
         parser.add_argument('--tags', help='Tags', type=json.loads, metavar='{"Key": "Value", "Key": "Value"}', dest="Tags")
