@@ -24,7 +24,8 @@ setuptools.setup(
     install_requires=[
         'echome-sdk==0.5.1',
         'requests>=2.24',
-        'tabulate>=0.8.7'
+        'tabulate>=0.8.7',
+        'PyYAML==6.0'
     ],
     entry_points = {
         'console_scripts': [
