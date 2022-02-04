@@ -19,8 +19,8 @@ class KubeService(BaseService):
         self.parent_service = "kube"
         self.parent_full_name = "Kubernetes"
 
-        self.table_headers = ["Cluster ID",  "Controller", "Associated Instances", "Status", "Created"]
-        self.data_columns=["cluster_id", "primary", ["associated_instances", "instance_id"], "status", "created"]
+        self.table_headers = ["Name", "Cluster ID",  "Controller VM", "Node VMs", "Status", "Created"]
+        self.data_columns=["name", "cluster_id", "primary", ["associated_instances", "instance_id"], "status", "created"]
 
         self.session = Session()
         self.client:Kube = self.session.client("Kube")
@@ -165,10 +165,11 @@ class KubeService(BaseService):
 
     def create_cluster(self):
         parser = argparse.ArgumentParser(description='Create a Kubernetes cluster', prog=f"{APP_NAME} {self.parent_service} create-cluster")
-        parser.add_argument('--image-id', help='Image Id', required=True, metavar="<value>", dest="ImageId")
-        parser.add_argument('--instance-type', help='Instance Size', required=True, metavar="<value>", dest="InstanceType")
+        parser.add_argument('--name', help='Name of the cluster', required=True, metavar="<value>", dest="Name")
+        parser.add_argument('--image-id', help='Image ID to use for the cluster', required=True, metavar="<value>", dest="ImageId")
+        parser.add_argument('--instance-type', help='Instance Size for the controller', required=True, metavar="<value>", dest="InstanceType")
         parser.add_argument('--network-profile', help='Network type', required=True, metavar="<value>", dest="NetworkProfile")
-        parser.add_argument('--controller-ip', help='IP address of the primary controller', required=True, metavar="<value>", dest="ControllerIp")
+        parser.add_argument('--controller-ip', help='IP address to assign for the controller', required=True, metavar="<value>", dest="ControllerIp")
         parser.add_argument('--key-name', help='Key name', metavar="<value>", dest="KeyName")
         parser.add_argument('--disk-size', help='Disk size', metavar="<value>", dest="DiskSize")
         parser.add_argument('--tags', help='Tags', type=json.loads, metavar='{"Key": "Value", "Key": "Value"}', dest="Tags")
