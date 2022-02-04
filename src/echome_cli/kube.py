@@ -1,6 +1,11 @@
-import sys
 import argparse
 import json
+import os
+import shutil
+import sys
+import time
+import yaml
+from pathlib import Path
 from echome import Session
 from echome.kube import Kube
 from .base_service import BaseService
@@ -66,31 +71,94 @@ class KubeService(BaseService):
     
 
     def get_cluster_config(self):
-        parser = argparse.ArgumentParser(description='Obtain the Kubernetes Admin config file', prog=f"{APP_NAME} {self.parent_service} get-cluster-config")
+        parser = argparse.ArgumentParser(description='Obtain the Kubernetes Admin config file.', prog=f"{APP_NAME} {self.parent_service} get-cluster-config")
         parser.add_argument('cluster_id',  help='Cluster Id', metavar="<cluster-id>")
 
         group = parser.add_mutually_exclusive_group(required=True)
-        group.add_argument('--file',  help='Where a new file will be created with the contents of the config file.', metavar="<./cluster.conf>")
+        group.add_argument('--file',  help='Where a file will be created or updated with the contents of the config file.', metavar="<./cluster.conf>")
         group.add_argument('--no-file',  help='Output only the config file to stdout instead of into a file.', action='store_true')
+        group.add_argument('--kubeconfig',  help='Write the contents to the KUBECONFIG file.', action='store_true')
 
         args = parser.parse_args(sys.argv[3:])
 
         try:
             kube_config = self.client.get_kube_config(args.cluster_id)['results']['admin.conf']
         except Exception:
-            print("There was an error when attempting to retrieve the config file.")
+            print("An error occurred while attempting to retrieve the config file. Server Error.")
             exit(1)
+        
+        k_config_dict = yaml.safe_load(kube_config)
 
         if args.no_file:
             print(kube_config)
             exit(0)
-        else:
-            try:
-                with open(args.file, "a") as file_object:
-                    file_object.write(kube_config)
-            except Exception as error:
-                print(error)
-                exit(1)
+        
+        if 'file' in args:
+            f = args.file
+        
+        if args.kubeconfig:
+            f = os.getenv('KUBECONFIG', f"{str(Path.home())}/.kube/config")
+        
+        # Check to see if there's already a file here
+        # If there is, check to see if it's valid yaml
+        # and attempt to merge.
+        # if not, write a new file.
+
+        path = Path(f)
+        # Found a file
+        if not path.is_file() or ( path.is_file() and os.stat(f).st_size == 0 ):
+            # If it's empty, write to it
+            if os.stat(f).st_size == 0:
+                try:
+                    with open(f, "a") as file_object:
+                        file_object.write(kube_config)
+                    
+                    print(f"Wrote Kubeconfig to {f}")
+                    exit(0)
+                except Exception as error:
+                    print(error)
+                    exit(1)
+
+        # If there's stuff in it, is it yaml?
+        contents = None
+        with open(f, "r") as file_object:
+            contents = file_object.read()
+
+        try:
+            original_config = yaml.safe_load(contents)
+        except Exception as error:
+            print(error)
+            exit(1)
+        
+        if original_config is None:
+            print(f"File {f} is not valid.")
+        
+        # Combine YAML files
+        # If this cluster already exists, overwrite it by first removing then adding it in
+        for section in ['clusters', 'contexts', 'users']:
+            for x in range(0, len(original_config[section])):
+                if original_config[section][x]['name'] == k_config_dict[section][0]['name']:
+                    del original_config[section][x]
+
+        original_config['clusters'].append(k_config_dict['clusters'][0])
+        original_config['contexts'].append(k_config_dict['contexts'][0])
+        original_config['users'].append(k_config_dict['users'][0])
+        original_config['current-context'] = k_config_dict['current-context']
+
+        try:
+            epoch = str(int(time.time()))
+            tmp_file = f"/tmp/kubeconfig.{epoch}"
+            print(f"Making backup of kubeconfig file to {tmp_file}")
+            shutil.copyfile(f, tmp_file)
+
+            with open(f, "w") as file_object:
+                file_object.write(yaml.dump(original_config))
+            
+            print("Added context to kubeconfig file.")
+                
+        except Exception as error:
+            print(error)
+            exit(1)
         
         exit()
     
