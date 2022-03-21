@@ -73,13 +73,12 @@ class KeysService(BaseService):
             try:
                 with open(args.file, "a") as file_object:
                     # Append 'hello' at the end of file
-                    file_object.write(response["PrivateKey"])
-                    response["PrivateKey"] = args.file
+                    file_object.write(response['results']["private_key"])
+                    print("Wrote key to {args.file}")
             except Exception as error:
                 print(error)
                 exit(1)
 
-        print(json.dumps(response, indent=4))
         #TODO: Return exit value if command does not work
         exit()
 
@@ -89,6 +88,6 @@ class KeysService(BaseService):
         parser.add_argument('key_name',  help='SSH Key Name', metavar="<key-name>")
         args = parser.parse_args(sys.argv[3:])
 
-        print(json.dumps(self.client.delete(args.key_name), indent=4))
+        print(json.dumps(self.client.delete_sshkey(args.key_name), indent=4))
         #TODO: Return exit value if command does not work
         exit()
